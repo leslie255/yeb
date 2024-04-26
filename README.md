@@ -40,9 +40,6 @@ Cmd build_test() {
 
 int main() {
     yeb_bootstrap();
-    Cmd cmd = {0};
-    cc(&cmd);
-    cflags(&cmd);
     execute(build_test());
     return 0;
 }
