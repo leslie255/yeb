@@ -1,11 +1,13 @@
 # YEB
 
-Bootstrapped, zero install build system for C inspired by [nobuild](https://github.com/tsoding/nobuild?tab=readme-ov-file).
+Bootstrapped, zero install build system for C inspired by
+[nobuild](https://github.com/tsoding/nobuild?tab=readme-ov-file).
 
 ## Getting started
 
 - Yeb does not require installing anything other than a C compiler
-- Download `yeb.h` into your project directory (henceforth referred to as `project/`) from the [Releases](https://github.com/leslie255/yeb/releases) page (Do not use the one in the repo! It's not stable!).
+- Download `yeb.h` into your project directory (henceforth referred to as `project/`) from the
+[Releases](https://github.com/leslie255/yeb/releases) page (Do not use the one in the repo! It's not stable!).
 - Create `project/main.c`:
 ```c
 #include <stdio.h>
@@ -99,6 +101,9 @@ And this is what you do in C:
 // Linux specific things.
 #elif __apple__
 // MacOS specific things.
+#else
+printf("Unsupported OS!")
+exit(1);
 #end
 ```
 
@@ -116,4 +121,5 @@ You just ship the `yeb.h` and `build.c` in the project root.
 
 This is just a thing I made for my own side projects, if you're working on a production project with a dozen
 dependencies managed by CMAKE, this is not for you.
+
 
