@@ -93,24 +93,39 @@ void yeb_bootstrap();
 
 DECL_DA_STRUCT(const char *, ConstStrings);
 
+DECL_DA_STRUCT(char, DynString);
+
 typedef struct cmd {
   ConstStrings args;
 } Cmd;
 
-Cmd cmd_(const char *first, ...);
-
-#define CMD(FIRST, ...) cmd_((FIRST), __VA_ARGS__, NULL)
+#define CMD_APPEND(CMD, ...) da_append_multiple(&(CMD)->args, __VA_ARGS__)
 
 void execute(Cmd cmd);
+
+typedef uint8_t LogLevel;
+
+#define LOG_LEVEL_INFO 0
+#define LOG_LEVEL_WARNING 1
+#define LOG_LEVEL_ERROR 2
+
+#ifndef LOG_LEVEL
+#define LOG_LEVEL LOGLEVEL_INFO
+#endif
+
+void lprintf(LogLevel level, const char *restrict fmt, ...);
 
 #ifndef YEB_NO_IMPL
 
 // #undef YEB_INTERNAL
 #ifndef YEB_INTERNAL
 
-Cmd cmd_(const char *first, ...) { exit(0); }
+#define YEB_ERROR_NOT_BOOTSTRAPPED()                                           \
+  (printf("You need to call `yeb_bootstrap()` before doing anything in "       \
+          "`build.c`\n"),                                                      \
+   exit(1))
 
-void execute(Cmd cmd) { exit(0); }
+void execute(Cmd cmd) { YEB_ERROR_NOT_BOOTSTRAPPED(); }
 
 void yeb_bootstrap() {
   FILE *yeb_is_bootstrapped_txt = fopen("yeb/yeb_is_bootstrapped.txt", "r");
@@ -141,18 +156,19 @@ void yeb_bootstrap() {
   yeb_bootstrap_execute("clang -c yeb/yeb.c -o yeb/yeb.o");
   FILE *run_c = fopen("yeb/run.c", "w");
   assert(run_c != NULL);
-  fprintf(run_c, //
-          "#include <stdio.h>\n"
-          "#include <stdlib.h>\n"
-          "int main() {\n"
-          "  int exit_code;\n"
-          "  exit_code = system(\"clang -c -DYEB_NO_IMPL build.c -o yeb/build.o\");\n"
-          "  if (exit_code != 0) exit(exit_code);\n"
-          "  exit_code = system(\"clang yeb/yeb.o yeb/build.o -o yeb/a.out\");\n"
-          "  if (exit_code != 0) exit(exit_code);\n"
-          "  exit_code = system(\"./yeb/a.out\");\n"
-          "  exit(exit_code);\n"
-          "}");
+  fprintf(
+      run_c,
+      "#include <stdlib.h>\n"
+      "int main() {\n"
+      "  int exit_code;\n"
+      "  exit_code = system(\"clang -c -DYEB_NO_IMPL build.c -o "
+      "yeb/build.o\");\n"
+      "  if (exit_code != 0) exit(exit_code);\n"
+      "  exit_code = system(\"clang yeb/yeb.o yeb/build.o -o yeb/a.out\");\n"
+      "  if (exit_code != 0) exit(exit_code);\n"
+      "  exit_code = system(\"./yeb/a.out\");\n"
+      "  exit(exit_code);\n"
+      "}");
   fclose(run_c);
   yeb_bootstrap_execute("clang yeb/run.c -o yeb/yeb");
   yeb_bootstrap_execute("touch yeb/yeb_is_bootstrapped.txt");
@@ -175,22 +191,6 @@ error:
 #else
 
 void yeb_bootstrap(){};
-
-Cmd cmd_(const char *first, ...) {
-  Cmd cmd = {0};
-  da_push(&cmd.args, first);
-  va_list va;
-  va_start(va, first);
-  for (;;) {
-    const char *arg = va_arg(va, const char *);
-    if (arg == NULL)
-      break;
-    da_push(&cmd.args, arg);
-  }
-  return cmd;
-}
-
-DECL_DA_STRUCT(char, DynString)
 
 static inline const char *concat_strings_with_space(ConstStrings strings) {
   if (strings.da_len == 0) {
