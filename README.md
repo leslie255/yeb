@@ -1,7 +1,8 @@
 # YEB
 
-Bootstrapped, zero install build system for C inspired by
-[nobuild](https://github.com/tsoding/nobuild?tab=readme-ov-file).
+Bootstrapped, zero install build system for C.
+
+inspired by [nobuild](https://github.com/tsoding/nobuild?tab=readme-ov-file).
 
 ## Getting started
 

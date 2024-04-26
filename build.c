@@ -13,6 +13,11 @@ Cmd build_test_main() {
 }
 
 int main(int argc, char **argv) {
+  // DynString cmd = {0};
+  // dynstring_append_cstr(&cmd, "./yeb/a.out");
+  // printf("%s\n", cmd.cstr);
+  // return 0;
+
   yeb_bootstrap();
   for (int i = 1; i < argc; ++i) {
     printf("%s\n", argv[i]);

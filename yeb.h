@@ -94,7 +94,71 @@ void yeb_bootstrap();
 
 DECL_DA_STRUCT(const char *, ConstStrings);
 
-DECL_DA_STRUCT(char, DynString);
+typedef struct DynString {
+  /// Non nullable.
+  char *cstr;
+  /// `len` does not count the null character in the end.
+  size_t len;
+  size_t cap;
+} DynString;
+
+static inline DynString dynstring_new() {
+  char *chars = malloc(DA_INIT_CAP);
+  assert(chars != NULL);
+  chars[0] = '\0';
+  return (DynString){
+      .cstr = chars,
+      .len = 0,
+      .cap = DA_INIT_CAP,
+  };
+}
+
+static inline char *dynstring_get(DynString *s, size_t i) {
+  return &s->cstr[i];
+}
+
+static inline char *dynstring_get_checked(DynString *s, size_t i) {
+  assert(i < s->len);
+  return dynstring_get(s, i);
+}
+
+static inline void dynstring_push(DynString *s, char c) {
+  ++s->len;
+  if (s->len + 1 > s->cap) {
+    s->cap *= 2;
+    s->cstr = realloc(s->cstr, s->cap);
+    assert(s->cstr != NULL);
+  }
+  *dynstring_get(s, s->len - 1) = c;
+  *dynstring_get(s, s->len) = '\0';
+}
+
+static inline void dynstring_append(DynString *s, const char *src, size_t len) {
+  size_t i = s->len;
+  s->len += len;
+  if (s->len + 1 > s->cap) {
+    s->cap = (s->len + 1 > s->cap) ? s->len + 1 : s->cap * 2;
+    s->cstr = realloc(s->cstr, s->cap);
+    assert(s->cstr != NULL);
+  }
+  memcpy(dynstring_get(s, i), src, len);
+  *dynstring_get(s, s->len) = '\0';
+}
+
+static inline void dynstring_append_cstr(DynString *s, const char *cstr) {
+  size_t len = strlen(cstr);
+  size_t i = s->len;
+  s->len += len;
+  if (s->len + 1 > s->cap) {
+    s->cap = (s->len + 1 > s->cap) ? s->len + 1 : s->cap * 2;
+    s->cstr = realloc(s->cstr, s->cap);
+    assert(s->cstr != NULL);
+  }
+  memcpy(dynstring_get(s, i), cstr, len + 1);
+}
+
+#define dynstring_append_literal(S, LITERAL)                                   \
+  dynstring_append((S), LITERAL, sizeof(LITERAL) - 1)
 
 typedef struct cmd {
   ConstStrings args;
@@ -120,25 +184,21 @@ typedef uint8_t LogLevel;
 
 void yeb_bootstrap(){};
 
-static inline const char *concat_strings_with_space(ConstStrings strings) {
+static inline DynString concat_strings_with_space(ConstStrings strings) {
   if (strings.da_len == 0) {
-    return "";
-  }
-  if (strings.da_len == 1) {
-    return *da_get(&strings, 0);
+    return dynstring_new();
   }
   DynString s = {0};
   DA_FOR(&strings, i, s_, {
-    size_t len = strlen(*s_);
-    da_append(&s, *s_, len);
-    da_push(&s, ' ');
+    dynstring_append_cstr(&s, *s_);
+    dynstring_push(&s, ' ');
   });
-  *da_get_checked(&s, s.da_len - 1) = '\0';
-  return s.da_items;
+  *dynstring_get_checked(&s, s.len - 1) = '\0';
+  return s;
 }
 
 void execute(Cmd cmd) {
-  const char *s = concat_strings_with_space(cmd.args);
+  const char *s = concat_strings_with_space(cmd.args).cstr;
   printf("$ %s\n", s);
   int exit_code = system(s);
   if (exit_code != 0) {
@@ -159,14 +219,13 @@ int main(int argc, char **argv) {
   if (exit_code != 0)
     return exit_code;
   DynString cmd = {0};
-  da_append(&cmd, "./yeb/a.out", sizeof("./yeb/a.out") - 1);
+  dynstring_append_cstr(&cmd, "./yeb/a.out");
   for (int i = 1; i < argc; ++i) {
-    da_push(&cmd, ' ');
-    size_t len = strlen(argv[i]);
-    da_append(&cmd, argv[i], len);
+    dynstring_push(&cmd, ' ');
+    dynstring_append_cstr(&cmd, argv[i]);
   }
-  da_push(&cmd, '\0');
-  return system(cmd.da_items);
+  exit_code = system(cmd.cstr);
+  return exit_code;
 }
 
 #else
@@ -196,7 +255,7 @@ void yeb_bootstrap() {
   exit_code = system(S);                                                       \
   if (exit_code != 0)                                                          \
     if (exit_code != 0) {                                                      \
-      printf("command `%s` exited with non-zero exit code (%d)", S,            \
+      printf("command `%s` exited with non-zero exit code (%d)\n", S,          \
              exit_code);                                                       \
       exit(1);                                                                 \
     }
