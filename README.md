@@ -63,7 +63,7 @@ $ rm -f a.out
 ```bash
 $ mkdir bin/
 $ yeb/yeb
-$ ./project
+$ ./bin/project
 ```
 
 - Put these into `.gitignore`:
