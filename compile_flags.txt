@@ -3,4 +3,3 @@
 -Wconversion
 -DDEBUG
 -I./lib/raylib/src/
--DYEB_INTERNAL
