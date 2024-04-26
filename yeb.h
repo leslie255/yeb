@@ -2,6 +2,7 @@
 
 #include <assert.h>
 #include <stdarg.h>
+#include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -165,7 +166,6 @@ int main(int argc, char **argv) {
     da_append(&cmd, argv[i], len);
   }
   da_push(&cmd, '\0');
-  printf("[%s:%d] cmd.da_items = %s\n", __FILE__, __LINE__, cmd.da_items);
   return system(cmd.da_items);
 }
 

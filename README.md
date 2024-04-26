@@ -1,7 +1,5 @@
 # YEB
 
-**Build system of C, by C, for C**
-
 Bootstrapped, zero install build system for C inspired by [nobuild](https://github.com/tsoding/nobuild?tab=readme-ov-file).
 
 ## Getting started
@@ -69,3 +67,53 @@ yeb/
 bin/
 a.out
 ```
+
+## In what way is this better than Make?
+
+Makefiles are good for scripting, but it sucks when dealing with variables and functions, for example, this is what you
+do in a makefile to discriminate between operating systems:
+
+```makefile
+ifeq ($(OS),Windows_NT)
+    # Windows specific things
+else
+    UNAME_S := $(shell uname -s)
+    ifeq ($(UNAME_S),Linux)
+        # Linux specific things
+    else
+        ifeq ($(UNAME_S),Darwin)
+            # MacOS specific things
+        else
+            $(error Unsupported OS!)
+        endif
+    endif
+endif
+```
+
+And this is what you do in C:
+
+```c
+#if defined(__WIN32__)
+// Windows specific things.
+#elif __linux__
+// Linux specific things.
+#elif __apple__
+// MacOS specific things.
+#end
+```
+
+So the argument I'm making here is simply that the cumbersomeness of dealing with variables, functions and control
+statements in makefile is less cumbersome than the cumbersomeness of dealing with shell commands in C (which I can
+provide tools to make somewhat streamlined).
+
+Also yeb requires nothing on top of a C compiler (which you need anyways for a C project).
+
+## So how do I ship my source code that uses yeb for build system?
+
+You just ship the `yeb.h` and `build.c` in the project root.
+
+## It's not aimed for big projects
+
+This is just a thing I made for my own side projects, if you're working on a production project with a dozen
+dependencies managed by CMAKE, this is not for you.
+
