@@ -1,8 +1,17 @@
 #include "yeb.h"
 
-void cc(Cmd *cmd) { CMD_APPEND(cmd, "clang"); }
+bool is_release = false;
 
-void cflags(Cmd *cmd) { CMD_APPEND(cmd, "-Wall", "-Wextra"); }
+void cc(Cmd *cmd) { CMD_APPEND(cmd, "cc"); }
+
+void cflags(Cmd *cmd) {
+  CMD_APPEND(cmd, "-Wall", "-Wextra");
+  if (is_release) {
+    CMD_APPEND(cmd, "-O2");
+  } else {
+    CMD_APPEND(cmd, "-O1", "-g", "-DDEBUG");
+  }
+}
 
 Cmd build_test_main() {
   Cmd cmd = {0};
@@ -12,16 +21,16 @@ Cmd build_test_main() {
   return cmd;
 }
 
-int main(int argc, char **argv) {
-  // DynString cmd = {0};
-  // dynstring_append_cstr(&cmd, "./yeb/a.out");
-  // printf("%s\n", cmd.cstr);
-  // return 0;
+DECL_DA_STRUCT(int, Ints);
 
+int main(int argc, char **argv) {
   yeb_bootstrap();
-  for (int i = 1; i < argc; ++i) {
-    printf("%s\n", argv[i]);
+  for (int i = 0; i < argc; ++i) {
+    if (strcmp(argv[i], "--release") == 0) {
+      is_release = true;
+    }
   }
+  
   execute(build_test_main());
   return 0;
 }

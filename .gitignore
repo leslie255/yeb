@@ -1,6 +1,7 @@
 yeb/
 a.out
 test
+*.dSYM/
 
 # Created by https://www.toptal.com/developers/gitignore/api/linux,macos,windows,visualstudiocode,emacs,vim
 # Edit at https://www.toptal.com/developers/gitignore?templates=linux,macos,windows,visualstudiocode,emacs,vim

@@ -58,18 +58,49 @@ void yeb_bootstrap();
 
 #define da_reserve(DA, N)                                                      \
   do {                                                                         \
-    __auto_type arr = (DA);                                                    \
+    __auto_type DA_ = (DA);                                                    \
     size_t n = (N);                                                            \
-    if (arr->da_items == NULL) {                                               \
-      arr->da_cap = n;                                                         \
-      arr->da_items = malloc(sizeof(arr->da_items[0]) * arr->da_cap);          \
-      assert(arr->da_items != NULL);                                           \
-    } else if (arr->da_len + n > arr->da_cap) {                                \
-      arr->da_cap = arr->da_len + n;                                           \
-      arr->da_items =                                                          \
-          realloc(arr->da_items, sizeof(arr->da_items[0]) * arr->da_cap);      \
-      assert(arr->da_items != NULL);                                           \
+    if (DA_->da_items == NULL) {                                               \
+      DA_->da_cap = n;                                                         \
+      DA_->da_items = malloc(sizeof(DA_->da_items[0]) * DA_->da_cap);          \
+      assert(DA_->da_items != NULL);                                           \
+    } else if (DA_->da_len + n > DA_->da_cap) {                                \
+      DA_->da_cap = DA_->da_len + n;                                           \
+      DA_->da_items =                                                          \
+          realloc(DA_->da_items, sizeof(DA_->da_items[0]) * DA_->da_cap);      \
+      assert(DA_->da_items != NULL);                                           \
     }                                                                          \
+  } while (0)
+
+#define da_remove_last(DA) (--(DA)->da_len)
+
+#define da_insert(DA, I, ITEM)                                                 \
+  do {                                                                         \
+    __auto_type DA_ = (DA);                                                    \
+    size_t I_ = (I);                                                           \
+    ++DA_->da_len;                                                             \
+    if (DA_->da_items == NULL) {                                               \
+      DA_->da_cap = DA_INIT_CAP;                                               \
+      DA_->da_items = malloc(sizeof(DA_->da_items[0]) * DA_INIT_CAP);          \
+      assert(DA_->da_items != NULL);                                           \
+    } else if (DA_->da_len > DA_->da_cap) {                                    \
+      DA_->da_cap *= 2;                                                        \
+      DA_->da_items =                                                          \
+          realloc(DA_->da_items, sizeof(DA_->da_items[0]) * DA_->da_cap);      \
+      assert(DA_->da_items != NULL);                                           \
+    }                                                                          \
+    memmove(&DA_->da_items[I_ + 1], &DA_->da_items[I_],                        \
+            (DA_->da_len - I_ - 1) * sizeof(DA_->da_items[0]));                \
+    DA_->da_items[I_] = (ITEM);                                                \
+  } while (0)
+
+#define da_remove(DA, I)                                                       \
+  do {                                                                         \
+    __auto_type DA_ = (DA);                                                    \
+    size_t I_ = (I);                                                           \
+    --DA_->da_len;                                                             \
+    memmove(&DA_->da_items[I_], &DA_->da_items[I_ + 1],                        \
+            (DA_->da_len - I_) * sizeof(DA_->da_items[0]));                    \
   } while (0)
 
 #define DECL_DA_STRUCT(T, NAME)                                                \
@@ -80,12 +111,14 @@ void yeb_bootstrap();
   } NAME;
 
 #define DA_FOR(ARR, IDX, ITEM, BLOCK)                                          \
-  __auto_type ARR_ = (ARR);                                                    \
-  for (size_t IDX = 0; IDX < ARR_->da_len; ++IDX) {                            \
-    __auto_type ITEM = da_get(ARR_, IDX);                                      \
-    if (1)                                                                     \
-      BLOCK;                                                                   \
-  }
+  do {                                                                         \
+    __auto_type ARR_ = (ARR);                                                  \
+    for (size_t IDX = 0; IDX < ARR_->da_len; ++IDX) {                          \
+      __auto_type ITEM = da_get(ARR_, IDX);                                    \
+      if (1)                                                                   \
+        BLOCK;                                                                 \
+    }                                                                          \
+  } while (0);
 
 #define da_get(ARR, IDX) (&(ARR)->da_items[(IDX)])
 
