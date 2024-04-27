@@ -120,7 +120,7 @@ dynstring_append_cstr(&s, world);
 dynstring_push(&s, '\n');     
 printf("%c\n", *dynstring_get(&s, 0));
 printf("%c\n", *dynstring_get_checked(&s, 1));
-// `DynString` always keeps a null character from behind, which is why you can just use `.cstr` for getting the C string.
+// `DynString` always keeps a null character at the end, which is why you can just use `.cstr` for getting the C string.
 printf("%s\n", s.cstr);
 ```
 
