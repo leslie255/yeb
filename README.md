@@ -7,8 +7,7 @@ inspired by [nobuild](https://github.com/tsoding/nobuild?tab=readme-ov-file).
 ## Getting started
 
 - Yeb does not require installing anything other than a C compiler
-- Download `yeb.h` into your project directory (henceforth referred to as `project/`) from the
-[Releases](https://github.com/leslie255/yeb/releases) page (Do not use the one in the repo! It's not stable!).
+- Download `yeb.h` into your project directory (henceforth referred to as `project/`)
 - Create `project/main.c`:
 ```c
 #include <stdio.h>
