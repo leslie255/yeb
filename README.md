@@ -84,9 +84,9 @@ You just ship the `yeb.h` and `build.c` in the project root.
 DECL_DA_STRUCT(int, IntArray);
 // This is equivalent to:
 // typedef struct IntArray {
-//     int *dat_items;
-//     size_t dat_len;
-//     size_t dat_cap;
+//     int *da_items;
+//     size_t da_len;
+//     size_t da_cap;
 // } IntArray;
 
 Ints xs = {0};                          // Use `{0}` for initialization.
