@@ -5,12 +5,11 @@ bool is_release = false;
 void cc(Cmd *cmd) { CMD_APPEND(cmd, "cc"); }
 
 void cflags(Cmd *cmd) {
-  CMD_APPEND(cmd, "-Wall", "-Wextra");
-  if (is_release) {
+  CMD_APPEND(cmd, "-Wall", "-Wextra", "--std=gnu2x");
+  if (is_release)
     CMD_APPEND(cmd, "-O2");
-  } else {
+  else
     CMD_APPEND(cmd, "-O1", "-g", "-DDEBUG");
-  }
 }
 
 Cmd build_test_main() {
@@ -30,7 +29,7 @@ int main(int argc, char **argv) {
       is_release = true;
     }
   }
-  
+
   execute(build_test_main());
   return 0;
 }
